@@ -12,6 +12,7 @@ dependencies:
   fluttertoast: ^8.2.2
   flutter_sslcommerz: ^2.2.2-nullsafety.0
   intl: ^0.18.1
+  logger: ^2.0.2+1
 
 dev_dependencies:
   flutter_test:

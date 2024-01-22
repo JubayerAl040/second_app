@@ -1,20 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_sslcommerz/model/SSLCAdditionalInitializer.dart';
 import 'package:flutter_sslcommerz/model/SSLCCustomerInfoInitializer.dart';
-import 'package:flutter_sslcommerz/model/SSLCEMITransactionInitializer.dart';
 import 'package:flutter_sslcommerz/model/SSLCSdkType.dart';
-import 'package:flutter_sslcommerz/model/SSLCShipmentInfoInitializer.dart';
 import 'package:flutter_sslcommerz/model/SSLCTransactionInfoModel.dart';
 import 'package:flutter_sslcommerz/model/SSLCommerzInitialization.dart';
 import 'package:flutter_sslcommerz/model/SSLCurrencyType.dart';
-import 'package:flutter_sslcommerz/model/sslproductinitilizer/General.dart';
-import 'package:flutter_sslcommerz/model/sslproductinitilizer/SSLCProductInitializer.dart';
 import 'package:flutter_sslcommerz/sslcommerz.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:logger/logger.dart';
 
-enum SdkType { TESTBOX, LIVE }
+enum SdkType { testBox, live }
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,12 +19,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _key = GlobalKey<FormState>();
   dynamic formData = {};
-  SdkType _radioSelected = SdkType.TESTBOX;
+  SdkType _radioSelected = SdkType.testBox;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: Colors.deepPurple,
         title: const Text('SSLCommerz'),
       ),
       body: Form(
@@ -96,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   children: [
                     Radio(
-                      value: SdkType.TESTBOX,
+                      value: SdkType.testBox,
                       groupValue: _radioSelected,
                       activeColor: Colors.blue,
                       onChanged: (value) {
@@ -107,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const Text("TEXTBOX"),
                     Radio(
-                      value: SdkType.LIVE,
+                      value: SdkType.live,
                       groupValue: _radioSelected,
                       activeColor: Colors.blue,
                       onChanged: (value) {
@@ -181,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () {
                     if (_key.currentState != null) {
                       _key.currentState?.save();
-                      sslCommerzGeneralCall();
+                      sslCommerzCustomizedCall();
                       // sslCommerzCustomizedCall();
                     }
                   },
@@ -202,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
         multi_card_name: formData['multicard'],
         currency: SSLCurrencyType.BDT,
         product_category: "Food",
-        sdkType: _radioSelected == SdkType.TESTBOX
+        sdkType: _radioSelected == SdkType.testBox
             ? SSLCSdkType.TESTBOX
             : SSLCSdkType.LIVE,
         store_id: formData['store_id'],
@@ -213,9 +209,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     try {
       SSLCTransactionInfoModel result = await sslcommerz.payNow();
+      print('111111 ${result.status!}');
+      print('222222 ${result.status!}');
+      print('333333 ${result.status!}');
       if (result.status!.toLowerCase() == "failed") {
         Fluttertoast.showToast(
-          msg: "Transaction is Failed....",
+          msg: "Transaction is ${result.status!}....",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
@@ -225,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       } else if (result.status!.toLowerCase() == "closed") {
         Fluttertoast.showToast(
-          msg: "SDK Closed by User",
+          msg: "SDK ${result.status!} by User",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
@@ -245,7 +244,8 @@ class _HomeScreenState extends State<HomeScreen> {
             fontSize: 16.0);
       }
     } catch (e) {
-      debugPrint(e.toString());
+      Fluttertoast.showToast(msg: "Error: $e");
+      print(e);
     }
   }
 
@@ -371,6 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       SSLCTransactionInfoModel result = await sslcommerz.payNow();
       print('jb');
+      print("result $result");
       print('jb2');
       print("1. ${result.aPIConnect}");
       print("2. ${result.amount}");
@@ -404,7 +405,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (result.status!.toLowerCase() == "failed") {
         Fluttertoast.showToast(
-          msg: "Transaction is Failed....",
+          msg: "Transaction is ${result.status!}....",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      } else if (result.status!.toLowerCase() == "closed") {
+        Fluttertoast.showToast(
+          msg: "SDK ${result.status!} by User",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
@@ -414,17 +425,18 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       } else {
         Fluttertoast.showToast(
-          msg: "Transaction is ${result.status} and Amount is ${result.amount}",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.black,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
+            msg:
+                "Transaction is ${result.status} and Amount is ${result.amount}",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.black,
+            textColor: Colors.white,
+            fontSize: 16.0);
       }
     } catch (e) {
-      debugPrint(e.toString());
+      Fluttertoast.showToast(msg: "Error: $e");
+      print(e);
     }
   }
 }

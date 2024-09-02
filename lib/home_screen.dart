@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () {
                     if (_key.currentState != null) {
                       _key.currentState?.save();
-                      sslCommerzCustomizedCall();
+                      sslCommerzGeneralCall();
                       // sslCommerzCustomizedCall();
                     }
                   },
